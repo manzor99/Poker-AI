@@ -8,9 +8,10 @@ lastMove = {}
 
 class Player(object):
 
-    def __init__(self):
+    def __init__(self, chips):
         self.hasBet = False #we can only bet once so once we do set to true
         #need to reset it every hand
+        self.chips = chips
 
     def __str__():
         pass
@@ -19,7 +20,7 @@ class Player(object):
         pass
         #return (action, amount)
 
-    def getBestHand(self):
+    def getBestHand(hand, table): #static takes a hand and the cards on the table
         pass
         #returns the best hand aka list of ints 0-51
         #use %13 to check for pairs (same remainder = pair)
@@ -37,6 +38,9 @@ class Player(object):
         #this is super brute force and i feel like theres a better way to do this but idk how
         #im thinking there could be something using actual math (what a concept) 
         used = () #maybe use a tuple and do a in used b in used ect instead of or or or or
+
+        wins = 0
+        losses = 0
 
         for a in range(0,52):
             if a in hand:
@@ -59,7 +63,12 @@ class Player(object):
                                 for g in range(0,52):
                                     if g == a or g == b or g == c or g == d or g == f or g in hand:
                                         continue
-                                    pass
+                                    if self.getWinner(getBestHand([a, b], [c, d, e, f, g])):
+                                        wins += 1
+                                    else:
+                                        losses += 1
+                                    
+        return wins / (wins + losses)
 
 class Table(object):
     pass
