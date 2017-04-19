@@ -67,7 +67,10 @@ class Player(object):
                                         wins += 1
                                     else:
                                         losses += 1
-                                    
+                                    #we can do an alpha beta type thing where if the hand had enough to win reguardless of the other cards then we add all the instances
+                                    #that would occur after so like (51 - c) + (51 - d) ... ect - how many cards are before it times the amount of cards after. So if the A B cards are enough to win 
+                                    #you would do (51 - c) + (51 - d) ... (51 - g) - ( 5 * 2) because there are 10 invalid options. ie if A is 2H then g cant be 2H. This is kinda like alpha beta and
+                                    #would really help with the runtime.
         return wins / (wins + losses)
 
 class Table(object):
