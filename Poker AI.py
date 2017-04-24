@@ -26,7 +26,8 @@ class Player(object):
         #use %13 to check for pairs (same remainder = pair)
 
     def getWinner(self, hand): #pass it the opponents hand and it returns true if we win and false if not
-        #will use this in the getProb function to determine if we win or not
+        
+
         pass
 
     def getProb(self, hand): #pass it our best hand
