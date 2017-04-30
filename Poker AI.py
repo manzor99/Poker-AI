@@ -1,4 +1,4 @@
-#Rocco & Logan 351 Final Project
+ #Rocco & Logan 351 Final Project
 
 #60 second time limit
 
@@ -24,6 +24,42 @@ class Player(object):
         pass
         #returns the best hand aka list of ints 0-51
         #use %13 to check for pairs (same remainder = pair)
+        #returns a number based 1-9 1 being a straight flush 9 being high card and the high card ie (10, 12) aka royal flush (1, 0) being high card 2 (use mod for high card)
+        #10 is the best 1 is the worst
+
+    def isStraight(self, hand): #if its true use max(hand) to get the high card of the straight
+        if max(hand) - min(hand) <= 4:
+            return True
+        else: 
+            return False
+
+    def isFlush(self, hand):
+        if max(hand) - min(hand) <= 12:
+            return True
+        else:
+            return False
+
+    def ofAKind(self, hand):
+        pairs = {
+                 0: 0,
+                 1: 0,
+                 2: 0,
+                 3: 0,
+                 4: 0,
+                 5: 0, 
+                 6: 0, 
+                 7: 0, 
+                 8: 0, 
+                 9: 0, 
+                 10: 0, 
+                 11: 0, 
+                 12: 0
+                 }
+
+        for card in hand:
+            pairs[card % 13] += 1
+
+
 
     def getWinner(self, hand): #pass it the opponents hand and it returns true if we win and false if not
         
