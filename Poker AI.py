@@ -2,42 +2,118 @@
 
 #60 second time limit
 
-players = {}
-history = {} #all of these will be given by the Table class the prof made
 lastMove = {} 
 
 class Player(object):
 
-    def __init__(self, chips):
+    def __init__(self, chips, hand, table):
         self.hasBet = False #we can only bet once so once we do set to true
         #need to reset it every hand
         self.chips = chips
-
-    def __str__():
-        pass
-
+        self.hand = hand
+        self.table = table
+        
     def action(self, players, history, lastAction, MAX_BID):
-        pass
-        #return (action, amount)
+        action = ""
+        amount = 0
+        prob = self.getProb()
+        maxBet = 0
+        bet = 0
 
-    def getBestHand(hand, table): #static takes a hand and the cards on the table
-        pass
+        if prob < 50:
+            return ("check", 0) #if this isn't valid the prof's program will make us fold which is okay
+        else: #we only want to bet if there is a good chance we win
+            maxBet = 0.6 * self.chips
+            bet = 0.3 * self.chips
+            #need some way to find how much is in the pot and raise/call/fold accordingly*************************
+            if table.pot == 3:
+                pass
+
+
+        return (action, amount)
+
+    def getBestHand(self, table): #need to the value function. Make it static, and take a hand aka list. Player.value(hand)
+        tempHand = self.hand
+        tempHand.extend(table.getFlop())
+        bestHand = []
+        bestValue = (0, 0)
+        possibleHands = itertools.combinations(tempHand, 5)
+        handValue = (0, 0)
+
+        for hand in possibleHands:
+            handValue = self.value(hand) 
+            if handValue[0] < bestValue[0]: #kinda redudant maybe save as a variable>?
+                continue
+            elif handValue[0] > bestValue[0]:
+                bestHand = hand
+                bestValue = self.value(bestHand)
+            elif handValue[0] == bestValue[0]:
+                if bestValue[0] == 6:
+                    if handValue[1][0] > bestValue[1][0]:
+                        bestHand = hand
+                        bestValue = self.value(bestHand)
+                    elif handValue[1][0] == bestValue[1][0] and handValue[1][1] > bestValue[1][1]:
+                        bestHand = hand
+                        bestValue = self.value(bestHand)
+                    else:
+                        continue
+            elif bestValue[0] == 2: #the second element of the list of values (x, this one) will be bigger
+                if handValue[1][1] > bestValue[1][1]:
+                    bestHand = hand
+                    bestValue = self.value(bestHand)
+                elif handValue[1][1] == bestValue[1][1] and handValue[1][0] > bestValue[1][0]:
+                    bestHand = hand
+                    bestValue = self.value(bestHand)
+                else:
+                    continue
+
+    def getValue(self, hand):
+
+       if self.isStraightFlush(hand) != 0:
+           return self.isStraightFlush(hand)
+       elif self.ofAKind(hand)[0] == 7: #4 of a kind
+           return self.ofAKind(hand)
+       elif self.ofAKind(hand)[0] == 6: #full house
+           return self.ofAKind(hand)
+       elif self.isFlush(hand) != 0: #I could have returned false but it still works so its okay
+           return self.isFlush(hand)
+       elif self.isStraight(hand):
+           return self.isStraight(hand)
+       else:
+           return self.ofAKind(hand)
+
+
+
         #returns the best hand aka list of ints 0-51
-        #use %13 to check for pairs (same remainder = pair)
-        #returns a number based 1-9 1 being a straight flush 9 being high card and the high card ie (10, 12) aka royal flush (1, 0) being high card 2 (use mod for high card)
-        #10 is the best 1 is the worst
+        #returns a number based 0-8 1 being a straight flush 8 being high card and the high card ie (10, 12) aka royal flush (0, 0) being high card 2 (use mod for high card)
+        #8 is the best 1 is the worst
 
-    def isStraight(self, hand): #if its true use max(hand) to get the high card of the straight
+    def isStraightFlush(self, hand): #if its true use max(hand) to get the high card of the straight
         if max(hand) - min(hand) <= 4:
-            return True
+            return (8, max(hand))
         else: 
-            return False
+            return 0
+
+    def isStraight(self, hand):
+        values = []
+        for item in hand:
+            values.append(item % 13)
+
+        for item in values: #checks for duplicates
+            for item2 in values:
+                if item == item2:
+                    return 0
+
+        if max(hand) - min(hand) == 4: #checks if its a straight
+            return (4, max(hand))
+
+        return 0
 
     def isFlush(self, hand):
         if max(hand) - min(hand) <= 12:
-            return True
+            return (5, max(hand))
         else:
-            return False
+            return 0
 
     def ofAKind(self, hand):
         pairs = {
@@ -59,56 +135,57 @@ class Player(object):
         for card in hand:
             pairs[card % 13] += 1
 
+        vals = list(pairs.values())
 
+        if 4 in vals:
+            for i in range(12):
+                if pairs[i] == 4:
+                    return (7, i) #4 of a king
+        if 3 in vals and 2 in vals: #full house
+            for i in range(12):
+                if pairs[i] == 3:
+                    three = i
+                elif pairs[i] == 2:
+                    two == i
+            return (6, (three, two))
+        if 3 in vals:
+            for i in range(12):
+                if pairs[i] == 3:
+                    return (3, i)
+        if 2 in vals:
+            vals.remove(2)
+            if 2 in vals: #two pairs
+                twos = []
+                for i in range(12):
+                    if pairs[i] == 2:
+                        twos.append(i)
+                return (2, twos)
+            else: #one pair
+                for i in range(12):
+                    if pairs[i] == 2:
+                        return (1, i)
+        else:
+            max = 0
+            for i in range(12):
+                if pairs[i] != 0:
+                    max = i
+            return (0, max)
 
-    def getWinner(self, hand): #pass it the opponents hand and it returns true if we win and false if not
-        
+    def getProb(self): #pass it our best hand
+        possibleHands = 520
+        probOfLosing = 0
+        winningHands = self.getValue(self.hand)[0] * 52
+        winningHands += self.getValue(self.hand)[1]
 
-        pass
+        probOfLosing = (520 - winningHands) / 520
 
-    def getProb(self, hand): #pass it our best hand
-        #this function assumes no cards have been flipped
-        #if we make the probabiliy of us losing a decimal the probability of us losing is n * pob we lose (n is number of players) so we can use that to get the exact probability
-        #https://en.wikipedia.org/wiki/Poker_probability_(Texas_hold_%27em)
-        #might be useful ^
-        #I was thinking we could start b from 1 and c from 2 ect but that would change the probability and would be wrong
-        #this is super brute force and i feel like theres a better way to do this but idk how
-        #im thinking there could be something using actual math (what a concept) 
-        used = () #maybe use a tuple and do a in used b in used ect instead of or or or or
+        probOfLosing *= (self.table.players.length() - 1)
 
-        wins = 0
-        losses = 0
-
-        for a in range(0,52):
-            if a in hand:
-                continue
-            for b in range(0,52):
-                if b == a or b in hand:
-                    continue
-                for c in range(0,52):
-                    if c == a or c == b or c in hand:
-                        continue
-                    for d in range(0,52):
-                        if d == a or d == b or d == c or d in hand:
-                            continue
-                        for e in range(0,52):
-                            if e == a or e == b or e == c or e == d or e in hand:
-                                continue
-                            for f in range(0,52):
-                                if f == a or f == b or f == c or f == d or f == e or f in hand:
-                                    continue
-                                for g in range(0,52):
-                                    if g == a or g == b or g == c or g == d or g == f or g in hand:
-                                        continue
-                                    if self.getWinner(getBestHand([a, b], [c, d, e, f, g])):
-                                        wins += 1
-                                    else:
-                                        losses += 1
-                                    #we can do an alpha beta type thing where if the hand had enough to win reguardless of the other cards then we add all the instances
-                                    #that would occur after so like (51 - c) + (51 - d) ... ect - how many cards are before it times the amount of cards after. So if the A B cards are enough to win 
-                                    #you would do (51 - c) + (51 - d) ... (51 - g) - ( 5 * 2) because there are 10 invalid options. ie if A is 2H then g cant be 2H. This is kinda like alpha beta and
-                                    #would really help with the runtime.
-        return wins / (wins + losses)
+        return (1 - probOfLosing)
 
 class Table(object):
-    pass
+    def __init__(self, players, pot):
+        self.players = players
+        self.pot = 0
+    def getFlop(): #idk what to call this but its just the visible cards in the middle
+        pass
