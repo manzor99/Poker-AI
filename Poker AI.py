@@ -13,6 +13,19 @@ class Player(object):
         self.hand = hand
         self.table = table
         
+    def getIndex(self):
+        for i in range(len(table.players)):
+            if table.players[i] == self:
+                return i
+
+    def getPrevBets(self):
+        index = self.getIndex()
+        maxBet = 0
+        for i in range(index):
+            if self.table.history[-i][2] != None:
+                maxBet = max(maxBet, self.table.history[-i][2])
+        return totalBets
+
     def action(self, players, history, lastAction, MAX_BID):
         action = ""
         amount = 0
@@ -25,8 +38,14 @@ class Player(object):
         else: #we only want to bet if there is a good chance we win
             maxBet = 0.6 * self.chips
             bet = 0.3 * self.chips
-            #need some way to find how much is in the pot and raise/call/fold accordingly*************************
-            if table.pot == 3:
+            currentBet = self.getPrevBets()
+
+            if currentBet > maxBet:
+                return (fold, 0)
+            elif currentBet < bet:
+                return ("raise", bet - currentBet)
+            else:
+                return ("call", currentBet)
                 pass
 
 
@@ -187,5 +206,6 @@ class Table(object):
     def __init__(self, players, pot):
         self.players = players
         self.pot = 0
+        self.history = [] #will be a list [player, action, amount]
     def getFlop(): #idk what to call this but its just the visible cards in the middle
         pass
